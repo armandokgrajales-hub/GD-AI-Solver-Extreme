@@ -10,11 +10,11 @@
 #
 #  Key fixes vs. common broken configs
 #  ─────────────────────────────────────
-#  • Uses geode-sdk/build-geode-mod@v3  (stable tag, not @main which can break)
+#  • Uses geode-sdk/build-geode-mod@main  (only valid ref — no v1/v2/v3 tags exist)
 #  • target names match exactly: Win64 | Android64 | Android32
-#  • combine step uses geode-sdk/build-geode-mod/combine@v3  (same version)
+#  • combine step uses geode-sdk/build-geode-mod/combine@main  (same ref)
 #  • upload-artifact@v4  (v3 is deprecated on GitHub Actions)
-#  • No GEODE_SDK env var needed — the action handles it via -DGEODE_SDK
+#  • No GEODE_SDK env var needed — the action injects -DGEODE_SDK automatically
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: Build GD AI Solver Extreme
@@ -57,13 +57,13 @@ jobs:
         uses: actions/checkout@v4
 
       # ── 2. Build ──────────────────────────────────────────────────────────
-      #  build-geode-mod@v3 handles:
+      #  build-geode-mod@main handles:
       #    • Cloning the Geode SDK at the correct version
       #    • Setting up the NDK toolchain (Android targets)
       #    • Passing -DGEODE_SDK=<path> to cmake automatically
       #    • Uploading partial artifacts named "build-<target>" for combine step
       - name: Build mod (${{ matrix.config.target }})
-        uses: geode-sdk/build-geode-mod@v3
+        uses: geode-sdk/build-geode-mod@main
         with:
           sdk: "v4.10.2"
           target: ${{ matrix.config.target }}
@@ -80,10 +80,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # combine@v3 collects "build-Win64", "build-Android64", "build-Android32"
+      # combine@main collects "build-Win64", "build-Android64", "build-Android32"
       # artifacts and merges them into a single signed .geode package.
       - name: Combine platform artifacts
-        uses: geode-sdk/build-geode-mod/combine@v3
+        uses: geode-sdk/build-geode-mod/combine@main
         id: combine
 
       # Upload the final .geode as a downloadable workflow artifact
