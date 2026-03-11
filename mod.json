@@ -1,0 +1,54 @@
+{
+    "geode":   "4.10.2",
+    "gd": {
+        "win":     "2.2074",
+        "android": "2.2074"
+    },
+    "id":          "armandokgrajales.gd-ai-solver-extreme",
+    "name":        "GD AI Solver Extreme",
+    "version":     "v1.0.0",
+    "developer":   "armandokgrajales",
+    "description": "AI bot that completes Geometry Dash levels with human-like behaviour. Analysing real hitboxes, frame-perfect precision and zero crashes on mobile.",
+    "links": {
+        "source": "https://github.com/armandokgrajales/GD-AI-Solver-Extreme"
+    },
+    "tags": ["gameplay", "bot", "automation"],
+    "settings": {
+        "ai-enabled": {
+            "name":        "AI Enabled",
+            "description": "Master switch — enable/disable the AI solver.",
+            "type":        "bool",
+            "default":     false
+        },
+        "human-variance-ms": {
+            "name":        "Human Timing Variance (ms)",
+            "description": "Max random delay added to non-critical jumps to mimic human reaction.",
+            "type":        "int",
+            "default":     15,
+            "min":         0,
+            "max":         100
+        },
+        "frame-perfect-threshold": {
+            "name":        "Frame-Perfect Threshold (px)",
+            "description": "Distance at which the AI switches to zero-variance, frame-perfect mode.",
+            "type":        "float",
+            "default":     22.0,
+            "min":         5.0,
+            "max":         60.0
+        },
+        "lookahead-distance": {
+            "name":        "Look-ahead Distance (px)",
+            "description": "How many pixels ahead the AI scans for hazards.",
+            "type":        "float",
+            "default":     320.0,
+            "min":         100.0,
+            "max":         800.0
+        },
+        "show-debug-hitboxes": {
+            "name":        "Show Debug Hitboxes",
+            "description": "Draw AI hitbox overlay (dev/debug only — impacts performance).",
+            "type":        "bool",
+            "default":     false
+        }
+    }
+}
