@@ -1,0 +1,117 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  .github/workflows/build.yml  —  GD AI Solver Extreme
+#  GitHub Actions CI/CD  ·  armandokgrajales
+#
+#  Targets
+#  ───────
+#    • Windows x64  (MSVC toolchain via windows-latest runner)
+#    • Android ARM64 (arm64-v8a)
+#    • Android ARMv7 (armeabi-v7a)
+#
+#  The official geode-sdk/build-geode-mod action handles:
+#    — Geode SDK download & cmake configuration
+#    — NDK setup for Android targets
+#    — .geode package assembly
+#
+#  Green build tips
+#  ────────────────
+#    • sdk: version MUST match the "geode" field in mod.json (v4.10.2)
+#    • combine: true → merges all platform artifacts into one .geode file
+#    • upload-artifacts: true → makes the .geode file available for download
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build GD AI Solver Extreme
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# Cancel in-progress runs on the same branch to save runner minutes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Build matrix ────────────────────────────────────────────────────────────
+  build:
+    strategy:
+      # Keep all three targets running even if one fails, for better diagnostics
+      fail-fast: false
+      matrix:
+        target:
+          - name: Windows
+            os: windows-latest
+
+          - name: Android64
+            os: ubuntu-latest
+
+          - name: Android32
+            os: ubuntu-latest
+
+    name: "${{ matrix.target.name }}"
+    runs-on: "${{ matrix.target.os }}"
+
+    steps:
+      # ── 1. Checkout source ─────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Build with the official Geode action ────────────────────────────
+      #  Docs: https://github.com/geode-sdk/build-geode-mod
+      - name: Build mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          # Must match "geode" in mod.json exactly
+          sdk: "v4.10.2"
+
+          # One of: Win64 | Android32 | Android64
+          # The action maps these to the correct cmake toolchain/NDK
+          target: ${{ matrix.target.name }}
+
+          # Merge platform artifacts into a single .geode file at the end
+          combine: true
+
+          # Export the .geode file as a downloadable GitHub artifact
+          export-pdb: false
+
+  # ── Combine & publish ────────────────────────────────────────────────────────
+  package:
+    name: Package .geode file
+    runs-on: ubuntu-latest
+    # Wait for all build jobs to succeed
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The combine step in build-geode-mod@main uploads partial artifacts named
+      # "build-<target>".  The package action below merges them.
+      - name: Combine into .geode
+        uses: geode-sdk/build-geode-mod/combine@main
+        id: combine
+
+      # Upload the final combined .geode as a workflow artifact
+      - name: Upload .geode artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GD-AI-Solver-Extreme.geode
+          path: ${{ steps.combine.outputs.build-output }}
+          if-no-files-found: error
+          retention-days: 30
+
+      # ── Optional: create a GitHub Release on version tags ──────────────────
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.combine.outputs.build-output }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
