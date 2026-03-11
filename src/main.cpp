@@ -1,24 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  main.cpp  —  GD AI Solver Extreme
-//
-//  Geode entry point.
-//  All hook registration happens automatically via the $modify() macros in
-//  PlayLayerHook.cpp and PauseLayerHook.cpp — nothing extra is needed here.
-//
-//  This file exists as the translation unit that Geode looks for as the
-//  DLL/SO entry point.
+//  Geode mod entry point.
 // ─────────────────────────────────────────────────────────────────────────────
 #include <Geode/Geode.hpp>
 
 using namespace geode::prelude;
 
-// Geode's own macro marks the mod entry point and handles __attribute__
-// visibility / DllMain on every platform.
-$on_mod(Loaded) {
-    geode::log::info("GD AI Solver Extreme v{} loaded. Developer: armandokgrajales",
+// $on_mod values are lowercase in Geode 4.x: loaded / unloaded / enabled / disabled
+$on_mod(loaded) {
+    geode::log::info("[GD-AI] GD AI Solver Extreme v{} loaded. By armandokgrajales",
         Mod::get()->getVersion().toNonVString());
 }
 
-$on_mod(Unloaded) {
-    geode::log::info("GD AI Solver Extreme unloaded.");
+$on_mod(unloaded) {
+    geode::log::info("[GD-AI] GD AI Solver Extreme unloaded.");
 }
+
